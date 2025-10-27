@@ -98,7 +98,7 @@ def main(
             padding=(1, 2),
         )
 
-        columns = Columns([grid_panel, summary_panel])
+        columns = Columns([summary_panel, grid_panel])
         console.print(columns)
         return
 

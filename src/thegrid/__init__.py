@@ -9,28 +9,33 @@ from typing_extensions import Annotated
 GRID_WIDTH = 52  # Weeks in a year
 
 # Initialize the consoles for standard and error output
-console = Console(record=True)
+console = Console(record=True, emoji=True)
 err_console = Console(stderr=True)
 
 
-def calculate_weeks_lived(birthday: str) -> int:
-    """
-    Calculates the total weeks lived based on the received birthday date without
-    accounting for leap years.
-    """
-    birthday_date = datetime.strptime(birthday, "%Y-%m-%d")
+def calculate_weeks_lived(birthday_date: datetime) -> int:
     today = datetime.now()
     delta = today - birthday_date
-
     return delta.days // 7
 
 
-def generate_grid(weeks_lived: int, life_expectancy: int) -> list[list[str]]:
+def calculate_year_of_death(birthday_date: datetime, life_expectancy: int) -> int:
+    return birthday_date.year + life_expectancy
+
+
+def generate_grid(
+    weeks_lived: int,
+    life_expectancy: int,
+    symbols: dict[str, str],
+) -> list[list[str]]:
     """
     Generates a grid representing weeks lived vs the expected lifespan.
     """
     return [
-        ["x" if (i * GRID_WIDTH + j) < weeks_lived else "·" for j in range(GRID_WIDTH)]
+        [
+            symbols["lived"] if (i * GRID_WIDTH + j) < weeks_lived else symbols["left"]
+            for j in range(GRID_WIDTH)
+        ]
         for i in range(life_expectancy)
     ]
 
@@ -61,6 +66,22 @@ def main(
             help="display a summary of weeks lived and so on.",
         ),
     ] = False,
+    lived_symbol: Annotated[
+        str,
+        typer.Option(
+            "--lived",
+            show_default=True,
+            help="symbol used to represent weeks lived.",
+        ),
+    ] = "×",
+    left_symbol: Annotated[
+        str,
+        typer.Option(
+            "--left",
+            show_default=True,
+            help="symbol used to represent weeks left to live.",
+        ),
+    ] = "·",
 ) -> None:
     """
     Generates a grid representing the total number of weeks lived based on your birthday
@@ -68,30 +89,37 @@ def main(
     """
 
     try:
-        weeks_lived = calculate_weeks_lived(birthday)
+        birthday_date = datetime.strptime(birthday, "%Y-%m-%d")
     except Exception as e:
         err_console.print(f"something went wrong while parsing your birthday date: {e}")
         raise typer.Exit()
 
-    if weeks_lived > life_expectancy * GRID_WIDTH:
+    total_weeks = life_expectancy * GRID_WIDTH
+    weeks_lived = calculate_weeks_lived(birthday_date)
+    year_of_death = calculate_year_of_death(birthday_date, life_expectancy)
+    if weeks_lived > total_weeks:
         err_console.print(
             f"you have exceeded your expected lifespan of {life_expectancy} years."
         )
         raise typer.Exit()
 
-    grid = generate_grid(weeks_lived, life_expectancy)
+    grid = generate_grid(
+        weeks_lived, life_expectancy, {"lived": lived_symbol, "left": left_symbol}
+    )
     grid_panel = Panel.fit(
         "\n".join("".join(row) for row in grid),
         title="the grid",
         title_align="left",
+        subtitle=f"{birthday_date.year}-{year_of_death}",
+        subtitle_align="right",
         safe_box=True,
         padding=(1, 2),
     )
 
     if print_summary:
-        weeks_to_live = (life_expectancy * GRID_WIDTH) - weeks_lived
+        weeks_to_live = total_weeks - weeks_lived
         summary_panel = Panel.fit(
-            f"lived: {weeks_lived} weeks.\nto live: {weeks_to_live} weeks.\n",
+            f"{weeks_lived} weeks lived.\n{weeks_to_live} weeks left.",
             title="summary",
             title_align="left",
             safe_box=True,
@@ -100,9 +128,8 @@ def main(
 
         columns = Columns([summary_panel, grid_panel])
         console.print(columns)
-        return
-
-    console.print(grid_panel)
+    else:
+        console.print(grid_panel)
 
 
 def run() -> None:

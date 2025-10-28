@@ -1,7 +1,7 @@
 [project]
 name = "thegrid"
 version = "0.3.0"
-description = "Add your description here"
+description = "a simple cli that generates a grid representing the weeks you have lived vs the weeks you have left."
 readme = "README.md"
 authors = [{ name = "daniel", email = "contact@dnlzrgz.com" }]
 requires-python = ">=3.14"

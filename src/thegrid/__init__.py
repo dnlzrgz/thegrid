@@ -1,9 +1,11 @@
 from datetime import datetime
+from pathlib import Path
 
 import typer
+from rich.columns import Columns
 from rich.console import Console
 from rich.panel import Panel
-from rich.columns import Columns
+from rich.terminal_theme import DEFAULT_TERMINAL_THEME
 from typing_extensions import Annotated
 
 GRID_WIDTH = 52  # Weeks in a year
@@ -82,6 +84,14 @@ def main(
             help="symbol used to represent weeks left to live.",
         ),
     ] = "·",
+    export_svg: Annotated[
+        Path | None,
+        typer.Option(
+            "--export-svg",
+            show_default=True,
+            help="write svg to the path specified.",
+        ),
+    ] = None,
 ) -> None:
     """
     Generates a grid representing the total number of weeks lived based on your birthday
@@ -130,6 +140,9 @@ def main(
         console.print(columns)
     else:
         console.print(grid_panel)
+
+    if export_svg:
+        console.save_svg(path=f"{export_svg}", theme=DEFAULT_TERMINAL_THEME)
 
 
 def run() -> None:

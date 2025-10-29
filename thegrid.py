@@ -1,3 +1,12 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "typer",
+# ]
+# ///
+
 from datetime import datetime
 from pathlib import Path
 
@@ -145,9 +154,5 @@ def main(
         console.save_svg(path=f"{export_svg}", theme=DEFAULT_TERMINAL_THEME)
 
 
-def run() -> None:
-    typer.run(main)
-
-
 if __name__ == "__main__":
-    run()
+    typer.run(main)

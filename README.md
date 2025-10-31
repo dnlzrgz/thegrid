@@ -8,13 +8,13 @@ A simple single-file script that generates a grid that represents your lifetime 
 
 ## Usage
 
-1. Install [`uv`](https://docs.astral.sh/uv/)):
+1. Install [`uv`](https://docs.astral.sh/uv/):
 
 ```bash
 # macOS/Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Windows  Powershell)
+# Windows (Powershell)
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
